@@ -3,4 +3,4 @@
     image: campeonatoimg:latest
     build: .
     ports:
-      - "3006:8080"
+      - "3006:8089"
