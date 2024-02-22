@@ -1,0 +1,7 @@
+﻿version: '3.8'
+
+services:
+  api:
+    image: campeonatoimg:latest
+    ports:
+      - "3006:8080"
