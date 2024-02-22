@@ -1,5 +1,6 @@
 ﻿services:
-  api:
+  dockerapp:
     image: campeonatoimg:latest
+    build: .
     ports:
       - "3006:8080"
