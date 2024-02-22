@@ -1,16 +1,22 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
-WORKDIR /App
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 8080
 
-# Copy everything
-COPY . ./
-# Restore as distinct layers
-RUN dotnet restore
-# Build and publish a release
-RUN dotnet publish -c Release -o out
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["WebApi.csproj", "."]
+RUN dotnet restore "./WebApi.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "./WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-EXPOSE 8089
-WORKDIR /App
-COPY --from=build-env /App/out .
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "WebApi.dll"]
